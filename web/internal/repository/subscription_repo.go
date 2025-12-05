@@ -15,7 +15,7 @@ import (
 type SubscriptionRepository interface {
 	FindById(id int) (*model.Subscription, error)
 	List(userId string, serviceName string) ([]model.Subscription, error)
-	SumPrices(userId string, serviceName string) (int, error)
+	SumPrices(userId string, serviceName string) (*int, error)
 	Create(entity *model.Subscription) error
 	Update(entity *model.Subscription) error
 	Delete(entity *model.Subscription) error
