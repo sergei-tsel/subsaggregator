@@ -1,0 +1,9 @@
+### Изменение записи о подписке
+POST http://localhost:8080/subscription/1
+Content-Type: application/json
+
+{
+  "price": 400,
+  "start_date": "07-2025",
+  "end-date": "12-2025"
+}

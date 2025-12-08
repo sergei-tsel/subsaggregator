@@ -1,0 +1,8 @@
+### Суммарная стоимость подписок
+POST http://localhost:8080/subscription/sumPrices
+Content-Type: application/json
+
+{
+  "service_name": "Yandex Plus",
+  "user_id": "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+}
