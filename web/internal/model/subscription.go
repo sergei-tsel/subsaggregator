@@ -1,23 +1,14 @@
 package model
 
 import (
-	"encoding/json"
-	"time"
+	"subsaggregator/internal/utils"
 )
 
-type Date struct {
-	time.Time
-}
-
-func (date Date) MarshalJSON() ([]byte, error) {
-	return json.Marshal(date.Format("07-2025"))
-}
-
 type Subscription struct {
-	Id          int    // уникальный идентификатор
-	ServiceName string // название сервиса, предоставляющего подписку
-	Price       int    // стоимость месячной подписки в рублях
-	UserId      string // уникальный идентификатор пользователя
-	StartDate   Date   // дата начала подписки
-	EndDate     Date   // дата окончания подписки
+	Id          int         `json:"id"`                 // уникальный идентификатор
+	ServiceName string      `json:"service_name"`       // название сервиса, предоставляющего подписку
+	Price       int         `json:"price"`              // стоимость месячной подписки в рублях
+	UserId      string      `json:"user_id"`            // уникальный идентификатор пользователя
+	StartDate   *utils.Date `json:"start_date"`         // дата начала подписки
+	EndDate     *utils.Date `json:"end_date,omitempty"` // дата окончания подписки
 }

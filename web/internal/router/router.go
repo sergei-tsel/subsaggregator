@@ -115,7 +115,7 @@ func getOneSubscription(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateSubscription(w http.ResponseWriter, r *http.Request) {
-	stringSubsId := chi.URLParam(r, "subsId")
+	stringSubsId := chi.URLParam(r, "subscriptionId")
 	subsId, err := strconv.Atoi(stringSubsId)
 
 	if err != nil {
@@ -143,7 +143,7 @@ func updateSubscription(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteSubscription(w http.ResponseWriter, r *http.Request) {
-	stringSubsId := chi.URLParam(r, "subsId")
+	stringSubsId := chi.URLParam(r, "subscriptionId")
 	subsId, err := strconv.Atoi(stringSubsId)
 
 	if err != nil {

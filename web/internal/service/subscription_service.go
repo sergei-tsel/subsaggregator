@@ -3,30 +3,35 @@ package service
 import (
 	"subsaggregator/internal/model"
 	"subsaggregator/internal/repository"
+	"subsaggregator/internal/utils"
 )
 
 type CreateSubscriptionRequest struct {
-	ServiceName string     `json:"title"`
-	Price       int        `json:"price"`
-	UserId      string     `json:"user_id"`
-	StartDate   model.Date `json:"start_date"`
-	EndDate     model.Date `json:"end_date,omitempty"`
+	ServiceName string      `json:"service_name"`
+	Price       int         `json:"price"`
+	UserId      string      `json:"user_id"`
+	StartDate   *utils.Date `json:"start_date"`
+	EndDate     *utils.Date `json:"end_date,omitempty"`
 }
 
 type UpdateSubscriptionRequest struct {
-	Price     int        `json:"price"`
-	StartDate model.Date `json:"start_date"`
-	EndDate   model.Date `json:"end_date,omitempty"`
+	Price     int         `json:"price"`
+	StartDate *utils.Date `json:"start_date"`
+	EndDate   *utils.Date `json:"end_date,omitempty"`
 }
 
 type ListSubscriptionsRequest struct {
-	ServiceName string `json:"service_name,omitempty"`
-	UserId      string `json:"user_id,omitempty"`
+	ServiceName string     `json:"service_name,omitempty"`
+	UserId      string     `json:"user_id,omitempty"`
+	StartDate   utils.Date `json:"start_date"`
+	EndDate     utils.Date `json:"end_date,omitempty"`
 }
 
 type SumSubscriptionsRequest struct {
-	ServiceName string `json:"service_name,omitempty"`
-	UserId      string `json:"user_id,omitempty"`
+	ServiceName string     `json:"service_name,omitempty"`
+	UserId      string     `json:"user_id,omitempty"`
+	StartDate   utils.Date `json:"start_date"`
+	EndDate     utils.Date `json:"end_date,omitempty"`
 }
 
 func GetOneSubscription(subscriptionRepo repository.SubscriptionRepository, subsId int) (*model.Subscription, error) {
@@ -42,7 +47,12 @@ func GetOneSubscription(subscriptionRepo repository.SubscriptionRepository, subs
 }
 
 func ListSubscriptions(req ListSubscriptionsRequest, subscriptionRepo repository.SubscriptionRepository) ([]model.Subscription, error) {
-	subs, err := subscriptionRepo.List(req.UserId, req.ServiceName)
+	subs, err := subscriptionRepo.List(
+		req.UserId,
+		req.ServiceName,
+		req.StartDate,
+		req.EndDate,
+	)
 
 	if err != nil {
 		return subs, err
@@ -52,7 +62,12 @@ func ListSubscriptions(req ListSubscriptionsRequest, subscriptionRepo repository
 }
 
 func SumSubscriptionsPrices(req SumSubscriptionsRequest, subscriptionRepo repository.SubscriptionRepository) (*int, error) {
-	sum, err := subscriptionRepo.SumPrices(req.UserId, req.ServiceName)
+	sum, err := subscriptionRepo.SumPrices(
+		req.UserId,
+		req.ServiceName,
+		req.StartDate,
+		req.EndDate,
+	)
 
 	if err != nil {
 		return sum, err
@@ -88,6 +103,7 @@ func UpdateSubscription(req UpdateSubscriptionRequest, repo repository.Subscript
 	sub.Price = req.Price
 	sub.StartDate = req.StartDate
 	sub.EndDate = req.EndDate
+
 	err = repo.Update(sub)
 
 	if err != nil {

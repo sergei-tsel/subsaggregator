@@ -2,6 +2,7 @@ package repository
 
 import (
 	"subsaggregator/internal/model"
+	"subsaggregator/internal/utils"
 )
 
 type SubscriptionRepoMock struct {
@@ -17,10 +18,14 @@ func (repo SubscriptionRepoMock) FindById(id int) (*model.Subscription, error) {
 	return nil, nil
 }
 
-func (repo SubscriptionRepoMock) List(userId string, serviceName string) ([]model.Subscription, error) {
+func (repo SubscriptionRepoMock) List(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) ([]model.Subscription, error) {
 	subs := []model.Subscription{}
 
 	for _, sub := range repo.Subscriptions {
+		if maxStartDate.NullTime.Time.After(sub.EndDate.Time) || minEndDate.NullTime.Time.Before(sub.StartDate.Time) {
+			continue
+		}
+
 		if userId != "" && sub.UserId != userId {
 			continue
 		}
@@ -35,10 +40,14 @@ func (repo SubscriptionRepoMock) List(userId string, serviceName string) ([]mode
 	return subs, nil
 }
 
-func (repo SubscriptionRepoMock) SumPrices(userId string, serviceName string) (*int, error) {
+func (repo SubscriptionRepoMock) SumPrices(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) (*int, error) {
 	var sumPrice int
 
 	for _, sub := range repo.Subscriptions {
+		if maxStartDate.NullTime.Time.After(sub.EndDate.Time) || minEndDate.NullTime.Time.Before(sub.StartDate.Time) {
+			continue
+		}
+
 		if userId != "" && sub.UserId != userId {
 			continue
 		}

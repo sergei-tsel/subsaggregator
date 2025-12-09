@@ -1,10 +1,12 @@
 package service
 
 import (
+	"database/sql"
 	"reflect"
 	"strconv"
 	"subsaggregator/internal/model"
 	"subsaggregator/internal/repository"
+	"subsaggregator/internal/utils"
 	"testing"
 	"time"
 )
@@ -83,11 +85,13 @@ func TestListSubscriptions(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Получение всех подписок",
+			name: "Получение всех подписок за выбранный период",
 			args: args{
 				req: ListSubscriptionsRequest{
 					ServiceName: "",
 					UserId:      "",
+					StartDate:   *subs[0].StartDate,
+					EndDate:     *subs[0].EndDate,
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
@@ -100,6 +104,8 @@ func TestListSubscriptions(t *testing.T) {
 				req: ListSubscriptionsRequest{
 					ServiceName: subs[0].ServiceName,
 					UserId:      subs[0].UserId,
+					StartDate:   *subs[0].StartDate,
+					EndDate:     *subs[0].EndDate,
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
@@ -112,6 +118,8 @@ func TestListSubscriptions(t *testing.T) {
 				req: ListSubscriptionsRequest{
 					ServiceName: "Тестовый сервис 3",
 					UserId:      "Тестовый UUID 3",
+					StartDate:   *subs[0].StartDate,
+					EndDate:     *subs[0].EndDate,
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
@@ -161,6 +169,8 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 				req: SumSubscriptionsRequest{
 					ServiceName: "",
 					UserId:      "",
+					StartDate:   *subs[0].StartDate,
+					EndDate:     *subs[0].EndDate,
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
@@ -173,6 +183,8 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 				req: SumSubscriptionsRequest{
 					ServiceName: subs[0].ServiceName,
 					UserId:      subs[0].UserId,
+					StartDate:   *subs[0].StartDate,
+					EndDate:     *subs[0].EndDate,
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
@@ -180,11 +192,13 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Получение нулевой суммарной стоимости пустого списка подписок",
+			name: "Отфильтрован пустой список записей о подписках",
 			args: args{
 				req: SumSubscriptionsRequest{
 					ServiceName: "Тестовый сервис 3",
 					UserId:      "Тестовый UUID 3",
+					StartDate:   *subs[0].StartDate,
+					EndDate:     *subs[0].EndDate,
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
@@ -214,15 +228,18 @@ func TestCreateSubscription(t *testing.T) {
 		Subscriptions: make(map[int]*model.Subscription),
 	}
 
-	startDate, _ := time.Parse("07-2025", "07-2025")
-	endDate, _ := time.Parse("07-2025", "12-2025")
-
 	req := CreateSubscriptionRequest{
 		ServiceName: "Тестовый сервис",
 		Price:       100,
 		UserId:      "Тестовый UUID",
-		StartDate:   model.Date{Time: startDate},
-		EndDate:     model.Date{Time: endDate},
+		StartDate: &utils.Date{NullTime: sql.NullTime{
+			Time:  time.Now().AddDate(0, -6, 0),
+			Valid: true,
+		}},
+		EndDate: &utils.Date{NullTime: sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}},
 	}
 
 	type args struct {
@@ -277,13 +294,16 @@ func TestUpdateSubscription(t *testing.T) {
 
 	subs := createTestSubscriptions(subscriptionRepo, 1)
 
-	startDate, _ := time.Parse("07-2025", "08-2025")
-	endDate, _ := time.Parse("07-2025", "11-2025")
-
 	req := UpdateSubscriptionRequest{
-		Price:     200,
-		StartDate: model.Date{Time: startDate},
-		EndDate:   model.Date{Time: endDate},
+		Price: 200,
+		StartDate: &utils.Date{NullTime: sql.NullTime{
+			Time:  time.Now().AddDate(0, -6, 0),
+			Valid: true,
+		}},
+		EndDate: &utils.Date{NullTime: sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}},
 	}
 
 	type args struct {
@@ -318,9 +338,15 @@ func TestUpdateSubscription(t *testing.T) {
 			name: "Несуществующая подписка",
 			args: args{
 				req: UpdateSubscriptionRequest{
-					Price:     0,
-					StartDate: model.Date{},
-					EndDate:   model.Date{},
+					Price: 0,
+					StartDate: &utils.Date{NullTime: sql.NullTime{
+						Time:  time.Now().AddDate(0, -6, 0),
+						Valid: true,
+					}},
+					EndDate: &utils.Date{NullTime: sql.NullTime{
+						Time:  time.Now(),
+						Valid: true,
+					}},
 				},
 				repo:   subscriptionRepo,
 				subsId: 0,
@@ -400,15 +426,18 @@ func createTestSubscriptions(repo repository.SubscriptionRepoMock, count int) []
 	subs := []model.Subscription{}
 
 	for i := 0; i < count; i++ {
-		startDate, _ := time.Parse("07-2025", "07-2025")
-		endDate, _ := time.Parse("07-2025", "12-2025")
-
 		createReq := CreateSubscriptionRequest{
 			ServiceName: "Тестовый сервис " + strconv.Itoa(i+1),
 			Price:       100 + (100 * i),
 			UserId:      "Тестовый UUID " + strconv.Itoa(i+1),
-			StartDate:   model.Date{Time: startDate.AddDate(0, i, 0)},
-			EndDate:     model.Date{Time: endDate.AddDate(0, i, 0)},
+			StartDate: &utils.Date{NullTime: sql.NullTime{
+				Time:  time.Now().AddDate(0, -6, 0),
+				Valid: true,
+			}},
+			EndDate: &utils.Date{NullTime: sql.NullTime{
+				Time:  time.Now(),
+				Valid: true,
+			}},
 		}
 
 		sub, _ := CreateSubscription(
