@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Date переопределяет NullTime из database/sql
 type Date struct {
 	sql.NullTime
 }

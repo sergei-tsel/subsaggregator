@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"net/http"
+	_ "subsaggregator/docs"
 	"subsaggregator/internal/db"
 	"subsaggregator/internal/router"
 
@@ -10,6 +11,12 @@ import (
 	"github.com/natefinch/lumberjack"
 )
 
+// @title		Subsaggregator
+// @version		1.0
+// @description	Агрегатор подписок
+// @host		localhost:8080
+// @BasePath	/
+// @schemes		http
 func main() {
 	godotenv.Load(".env")
 

@@ -153,7 +153,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 	subs := createTestSubscriptions(subscriptionRepo, 2)
 
 	type args struct {
-		req              SumSubscriptionsRequest
+		req              SumSubscriptionsPricesRequest
 		subscriptionRepo repository.SubscriptionRepository
 	}
 
@@ -166,7 +166,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 		{
 			name: "Получение суммарной стоимости всех подписок",
 			args: args{
-				req: SumSubscriptionsRequest{
+				req: SumSubscriptionsPricesRequest{
 					ServiceName: "",
 					UserId:      "",
 					StartDate:   *subs[0].StartDate,
@@ -180,7 +180,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 		{
 			name: "Получение суммарной стоимости отфильтрованных подписок",
 			args: args{
-				req: SumSubscriptionsRequest{
+				req: SumSubscriptionsPricesRequest{
 					ServiceName: subs[0].ServiceName,
 					UserId:      subs[0].UserId,
 					StartDate:   *subs[0].StartDate,
@@ -194,7 +194,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 		{
 			name: "Отфильтрован пустой список записей о подписках",
 			args: args{
-				req: SumSubscriptionsRequest{
+				req: SumSubscriptionsPricesRequest{
 					ServiceName: "Тестовый сервис 3",
 					UserId:      "Тестовый UUID 3",
 					StartDate:   *subs[0].StartDate,

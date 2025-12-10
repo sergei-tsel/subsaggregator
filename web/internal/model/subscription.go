@@ -1,14 +1,41 @@
 package model
 
 import (
+	_ "subsaggregator/docs"
 	"subsaggregator/internal/utils"
 )
 
+// Subscription представляет запись о подписке
+//
+//	@modelId	sub
+//
+// swagger:model Subscription
 type Subscription struct {
-	Id          int         `json:"id"`                 // уникальный идентификатор
-	ServiceName string      `json:"service_name"`       // название сервиса, предоставляющего подписку
-	Price       int         `json:"price"`              // стоимость месячной подписки в рублях
-	UserId      string      `json:"user_id"`            // уникальный идентификатор пользователя
-	StartDate   *utils.Date `json:"start_date"`         // дата начала подписки
-	EndDate     *utils.Date `json:"end_date,omitempty"` // дата окончания подписки
+	// ИД записи о подписке
+	// required: true
+	// min: 1
+	Id int `json:"id"`
+
+	// Название сервиса, предоставляющего подписку
+	// required: true
+	// example: "Yandex Plus"
+	ServiceName string `json:"service_name"`
+
+	// Стоимость месячной подписки в рублях
+	// required: true
+	// min: 1
+	Price int `json:"price"`
+
+	// ИД пользователя
+	// required: true
+	// min: 1
+	UserId string `json:"user_id"`
+
+	// Дата начала подписки
+	// required: true
+	StartDate *utils.Date `json:"start_date"`
+
+	// Дата окончания подписки
+	// required: false
+	EndDate *utils.Date `json:"end_date,omitempty"`
 }

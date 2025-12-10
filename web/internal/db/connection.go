@@ -18,9 +18,13 @@ var (
 )
 
 func Init() {
-	dsn := os.Getenv("POSTGRES_DSN")
+	var dsn string
+	var addr string
 
-	if dsn == "" {
+	if _, err := os.Stat("/.dockerenv"); err != nil {
+		dsn = os.Getenv("POSTGRES_DSN")
+		addr = os.Getenv("REDIS_ADDR")
+	} else {
 		host := os.Getenv("DB_HOST")
 		port := os.Getenv("DB_PORT")
 		dbName := os.Getenv("DB_DATABASE")
@@ -28,6 +32,7 @@ func Init() {
 		password := os.Getenv("DB_PASSWORD")
 
 		dsn = "postgres://" + user + ":" + password + "@" + host + ":" + port + "/" + dbName + "?sslmode=disable"
+		addr = os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT")
 	}
 
 	db, _ := sql.Open("postgres", dsn)
@@ -41,7 +46,6 @@ func Init() {
 
 	Postgres = db
 
-	addr := os.Getenv("REDIS_ADDR")
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 		DB:   0,
