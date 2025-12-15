@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"net/http"
+	"os"
 	_ "subsaggregator/docs"
 	"subsaggregator/internal/db"
 	"subsaggregator/internal/router"
@@ -32,8 +33,23 @@ func main() {
 		Compress:   false,
 	}
 
+	var level slog.Level
+	switch os.Getenv("LOG_LEVEL") {
+	case "debug":
+		level = slog.LevelDebug
+	case "info":
+		level = slog.LevelInfo
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
+	}
+
 	handler := slog.NewTextHandler(hook, &slog.HandlerOptions{
 		AddSource: true,
+		Level:     level,
 	})
 
 	logger := slog.New(handler)
