@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	_ "subsaggregator/docs"
 	"subsaggregator/internal/repository"
 	"subsaggregator/internal/service"
@@ -64,14 +65,14 @@ func createSubscription(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	sub, err := service.CreateSubscription(req, &repository.SubscriptionRepo{})
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -95,14 +96,19 @@ func listSubscription(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	subs, err := service.ListSubscriptions(req, &repository.SubscriptionRepo{})
 
 	if err != nil {
-		http.Error(w, "Subscriptions not found: "+err.Error(), http.StatusNotFound)
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Not found: "+err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -118,7 +124,6 @@ func listSubscription(w http.ResponseWriter, r *http.Request) {
 // @Param subscription body service.SumSubscriptionsPricesRequest true "Параметры запроса для получения суммарной стоимости подписок"
 // @Success 200 {integer} 100
 // @Failure 400
-// @Failure 404
 // @Router /subscription/sum-price [post]
 func sumSubscriptionPrices(w http.ResponseWriter, r *http.Request) {
 	var req service.SumSubscriptionsPricesRequest
@@ -126,14 +131,14 @@ func sumSubscriptionPrices(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	sumPrice, err := service.SumSubscriptionsPrices(req, &repository.SubscriptionRepo{})
 
 	if err != nil {
-		http.Error(w, "Subscriptions not found: "+err.Error(), http.StatusNotFound)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -156,14 +161,19 @@ func getOneSubscription(w http.ResponseWriter, r *http.Request) {
 	subId, err := strconv.Atoi(stringSubId)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	sub, err := service.GetOneSubscription(&repository.SubscriptionRepo{}, subId)
 
 	if err != nil {
-		http.Error(w, "Subscription not found: "+err.Error(), http.StatusNotFound)
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Not found: "+err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -183,11 +193,11 @@ func getOneSubscription(w http.ResponseWriter, r *http.Request) {
 // @Failure 404
 // @Router /subscription/{subscriptionId} [post]
 func updateSubscription(w http.ResponseWriter, r *http.Request) {
-	stringSubsId := chi.URLParam(r, "subscriptionId")
-	subsId, err := strconv.Atoi(stringSubsId)
+	stringSubId := chi.URLParam(r, "subscriptionId")
+	subId, err := strconv.Atoi(stringSubId)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -196,14 +206,19 @@ func updateSubscription(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	sub, err := service.UpdateSubscription(req, &repository.SubscriptionRepo{}, subsId)
+	sub, err := service.UpdateSubscription(req, &repository.SubscriptionRepo{}, subId)
 
 	if err != nil {
-		http.Error(w, "Subscription not found: "+err.Error(), http.StatusNotFound)
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Not found: "+err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -222,18 +237,23 @@ func updateSubscription(w http.ResponseWriter, r *http.Request) {
 // @Failure 404
 // @Router /subscription/{subscriptionId} [delete]
 func deleteSubscription(w http.ResponseWriter, r *http.Request) {
-	stringSubsId := chi.URLParam(r, "subscriptionId")
-	subsId, err := strconv.Atoi(stringSubsId)
+	stringSubId := chi.URLParam(r, "subscriptionId")
+	subId, err := strconv.Atoi(stringSubId)
 
 	if err != nil {
-		http.Error(w, "Invalid request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = service.DeleteSubscription(&repository.SubscriptionRepo{}, subsId)
+	err = service.DeleteSubscription(&repository.SubscriptionRepo{}, subId)
 
 	if err != nil {
-		http.Error(w, "Subscription not found: "+err.Error(), http.StatusNotFound)
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Not found: "+err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
