@@ -10,6 +10,9 @@ reload:
 	cd web && air -c air.toml
 test:
 	cd web && go test ./internal/service
+migration:
+	@read -p "Введи название миграции: " name; \
+	migrate create -ext sql -dir web/internal/db/migrations -seq $$name
 migrate_up_new:
 	cd web && migrate -source file://./internal/db/migrations -database postgres://postgres:secret@localhost:5432/postgres_sa?sslmode=disable up
 migrate_down_all:
