@@ -158,6 +158,11 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 
 	subs := createTestSubscriptions(subscriptionRepo, 2)
 
+	startYear, startMonth, _ := subs[0].StartDate.NullTime.Time.Date()
+	endYear, endMonth, _ := subs[0].EndDate.NullTime.Time.Date()
+
+	period := (endYear-startYear)*12 + (int(endMonth) + 1 - int(startMonth))
+
 	type args struct {
 		req              SumSubscriptionsPricesRequest
 		subscriptionRepo repository.SubscriptionRepository
@@ -180,7 +185,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
-			want:    subs[0].Price + subs[1].Price,
+			want:    (subs[0].Price + subs[1].Price) * period,
 			wantErr: false,
 		},
 		{
@@ -194,7 +199,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 				},
 				subscriptionRepo: subscriptionRepo,
 			},
-			want:    subs[0].Price,
+			want:    subs[0].Price * period,
 			wantErr: false,
 		},
 		{
@@ -223,7 +228,7 @@ func TestSumSubscriptionsPrices(t *testing.T) {
 			}
 
 			if *got != tt.want {
-				t.Errorf("SumSubscriptionsPrices() = %v, want %v", got, tt.want)
+				t.Errorf("SumSubscriptionsPrices() = %v, want %v", *got, tt.want)
 			}
 		})
 	}

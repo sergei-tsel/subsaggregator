@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"subsaggregator/internal/model"
 	"subsaggregator/internal/utils"
 )
@@ -60,8 +61,11 @@ func (repo SubscriptionRepoMock) List(
 func (repo SubscriptionRepoMock) SumPrices(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) (*int, error) {
 	var sumPrice int
 
+	uniquePrices := make(map[string]bool)
+
 	for _, sub := range repo.Subscriptions {
-		if maxStartDate.NullTime.Time.After(sub.EndDate.Time) || minEndDate.NullTime.Time.Before(sub.StartDate.Time) {
+		if maxStartDate.NullTime.Time.After(sub.EndDate.Time) ||
+			minEndDate.NullTime.Time.Before(sub.StartDate.Time) {
 			continue
 		}
 
@@ -73,7 +77,14 @@ func (repo SubscriptionRepoMock) SumPrices(userId string, serviceName string, ma
 			continue
 		}
 
-		sumPrice = sumPrice + sub.Price
+		for currentMonth := sub.StartDate.NullTime.Time; !currentMonth.After(sub.EndDate.NullTime.Time); currentMonth = currentMonth.AddDate(0, 1, 0) {
+			key := fmt.Sprintf("%s:%s:%s", sub.UserId, sub.ServiceName, currentMonth.Format("01-2006"))
+
+			if _, exists := uniquePrices[key]; !exists {
+				sumPrice += sub.Price
+				uniquePrices[key] = true
+			}
+		}
 	}
 
 	return &sumPrice, nil

@@ -135,18 +135,39 @@ func (repo *SubscriptionRepo) List(
 
 func (repo *SubscriptionRepo) SumPrices(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) (*int, error) {
 	query := `
-    	SELECT SUM(subscriptions.price) OVER () AS total_price
-		FROM subscriptions
-    	WHERE ($1::TEXT IS NULL OR subscriptions.user_id = $1) 
-    	  AND ($2::TEXT IS NULL OR subscriptions.service_name = $2)
-    	  AND (CASE 
-       			WHEN $3 <> '0001-01-01'::DATE THEN subscriptions.start_date <= $3
-       			ELSE TRUE
-     		END)
-    	  AND (CASE 
-    	      	WHEN $4 <> '0001-01-01'::DATE THEN subscriptions.end_date <= $4
-       			ELSE TRUE
-     		END);
+    	WITH active_subscriptions AS (
+    		SELECT
+        		user_id,
+        		service_name,
+        		price,
+        		generate_series(date_trunc('month', start_date), date_trunc('month', end_date), interval '1 month') AS month
+    		FROM subscriptions
+    		WHERE ($1::TEXT IS NULL OR user_id = $1)
+      			AND ($2::TEXT IS NULL OR service_name = $2)
+      			AND (CASE 
+            			WHEN $3 <> '0001-01-01'::DATE AND $4 <> '0001-01-01'::DATE
+            			THEN daterange(start_date, end_date, '[]') && daterange($3, $4, '[]')
+            		ELSE (CASE 
+                   			WHEN $3 <> '0001-01-01'::DATE THEN start_date <= $3
+                   			ELSE TRUE
+                 		END)
+                 		AND (CASE 
+                    		WHEN $4 <> '0001-01-01'::DATE THEN end_date >= $4
+                       		ELSE TRUE
+                     	END)	
+          			END)
+		),
+		unique_subscriptions AS (
+    		SELECT DISTINCT ON (user_id, service_name, month)
+        		user_id,
+        		service_name,
+        		price,
+        		month
+    		FROM active_subscriptions
+    		ORDER BY user_id, service_name, month ASC
+		)
+		SELECT SUM(price) AS total_price
+		FROM unique_subscriptions;
 	`
 
 	row := db.Postgres.QueryRow(query, getFilter(userId), getFilter(serviceName), maxStartDate, minEndDate)

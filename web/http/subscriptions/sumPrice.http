@@ -1,5 +1,5 @@
 ### Суммарная стоимость подписок
-POST http://localhost:8080/subscription/sumPrices
+POST http://localhost:8080/subscription/sum-price
 Content-Type: application/json
 
 {
