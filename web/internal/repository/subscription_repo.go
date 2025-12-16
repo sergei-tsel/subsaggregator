@@ -80,12 +80,16 @@ func (repo *SubscriptionRepo) List(
     	WHERE ($1::TEXT IS NULL OR subscriptions.user_id = $1) 
     	  AND ($2::TEXT IS NULL OR subscriptions.service_name = $2)
     	  AND (CASE 
-       			WHEN $3 <> '0001-01-01'::DATE THEN subscriptions.start_date <= $3
-       			ELSE TRUE
-     		END)
-    	  AND (CASE 
-       			WHEN $4 <> '0001-01-01'::DATE THEN subscriptions.end_date <= $4
-       			ELSE TRUE
+       		WHEN $3 <> '0001-01-01'::DATE AND $4 <> '0001-01-01'::DATE
+       		THEN daterange(start_date, end_date, '[]') && daterange($3, $4, '[]')
+       		ELSE (CASE 
+       				WHEN $3 <> '0001-01-01'::DATE THEN subscriptions.start_date <= $3
+       				ELSE TRUE
+     			END)
+    	  		AND (CASE 
+       				WHEN $4 <> '0001-01-01'::DATE THEN subscriptions.end_date <= $4
+       				ELSE TRUE
+     			END)
      		END)
     	OFFSET $5
     	LIMIT $6;
