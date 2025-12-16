@@ -18,8 +18,16 @@ func (repo SubscriptionRepoMock) FindById(id int) (*model.Subscription, error) {
 	return nil, nil
 }
 
-func (repo SubscriptionRepoMock) List(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) ([]model.Subscription, error) {
+func (repo SubscriptionRepoMock) List(
+	userId string,
+	serviceName string,
+	maxStartDate utils.Date,
+	minEndDate utils.Date,
+	offset int,
+	limit int,
+) ([]model.Subscription, error) {
 	subs := []model.Subscription{}
+	count := 0
 
 	for _, sub := range repo.Subscriptions {
 		if maxStartDate.NullTime.Time.After(sub.EndDate.Time) || minEndDate.NullTime.Time.Before(sub.StartDate.Time) {
@@ -34,7 +42,16 @@ func (repo SubscriptionRepoMock) List(userId string, serviceName string, maxStar
 			continue
 		}
 
+		if count < offset {
+			count++
+			continue
+		}
+
 		subs = append(subs, *sub)
+
+		if len(subs) == limit {
+			return subs, nil
+		}
 	}
 
 	return subs, nil

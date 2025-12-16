@@ -4,5 +4,6 @@ Content-Type: application/json
 
 {
   "service_name": "Yandex Plus",
-  "user_id": "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+  "user_id": "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+  "limit": 10
 }

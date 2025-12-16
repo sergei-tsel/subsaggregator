@@ -32,12 +32,14 @@ type UpdateSubscriptionRequest struct {
 // ListSubscriptionsRequest Модель данных для получения списка записей о подписках
 //
 //	@modelId	list-subs-request
-//	@required	ServiceName UserId StartDate EndDate
+//	@required	ServiceName UserId StartDate EndDate Offset Limit
 type ListSubscriptionsRequest struct {
 	ServiceName string     `json:"service_name,omitempty"`
 	UserId      string     `json:"user_id,omitempty"`
 	StartDate   utils.Date `json:"start_date" swaggertype:"string" example:"07-2025"`
 	EndDate     utils.Date `json:"end_date,omitempty" swaggertype:"string" example:"07-2025"`
+	Offset      int        `json:"offset"`
+	Limit       int        `json:"limit" example:"10"`
 }
 
 // SumSubscriptionsPricesRequest Модель данных для получения суммарной стоимости подписок
@@ -69,6 +71,8 @@ func ListSubscriptions(req ListSubscriptionsRequest, subscriptionRepo repository
 		req.ServiceName,
 		req.StartDate,
 		req.EndDate,
+		req.Offset,
+		req.Limit,
 	)
 
 	if err != nil {

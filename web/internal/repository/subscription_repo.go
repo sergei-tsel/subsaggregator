@@ -17,7 +17,7 @@ import (
 
 type SubscriptionRepository interface {
 	FindById(id int) (*model.Subscription, error)
-	List(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) ([]model.Subscription, error)
+	List(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date, offset int, limit int) ([]model.Subscription, error)
 	SumPrices(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) (*int, error)
 	Create(entity *model.Subscription) error
 	Update(entity *model.Subscription) error
@@ -66,7 +66,14 @@ func (repo *SubscriptionRepo) FindById(id int) (*model.Subscription, error) {
 	return &sub, nil
 }
 
-func (repo *SubscriptionRepo) List(userId string, serviceName string, maxStartDate utils.Date, minEndDate utils.Date) ([]model.Subscription, error) {
+func (repo *SubscriptionRepo) List(
+	userId string,
+	serviceName string,
+	maxStartDate utils.Date,
+	minEndDate utils.Date,
+	offset int,
+	limit int,
+) ([]model.Subscription, error) {
 	query := `
     	SELECT subscriptions.*
 		FROM subscriptions
@@ -79,10 +86,12 @@ func (repo *SubscriptionRepo) List(userId string, serviceName string, maxStartDa
     	  AND (CASE 
        			WHEN $4 <> '0001-01-01'::DATE THEN subscriptions.end_date <= $4
        			ELSE TRUE
-     		END);
+     		END)
+    	OFFSET $5
+    	LIMIT $6;
 	`
 
-	rows, err := db.Postgres.Query(query, getFilter(userId), getFilter(serviceName), maxStartDate, minEndDate)
+	rows, err := db.Postgres.Query(query, getFilter(userId), getFilter(serviceName), maxStartDate, minEndDate, offset, limit)
 	defer rows.Close()
 
 	if err != nil {
