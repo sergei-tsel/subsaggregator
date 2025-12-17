@@ -22,11 +22,13 @@ type CreateSubscriptionRequest struct {
 // UpdateSubscriptionRequest Модель данных для изменения записи о подписке
 //
 //	@modelId	update-sub-request
-//	@required	Price StartDate EndDate
+//	@required	ServiceName Price UserId StartDate EndDate
 type UpdateSubscriptionRequest struct {
-	Price     int         `json:"price"`
-	StartDate *utils.Date `json:"start_date" swaggertype:"string" example:"07-2025"`
-	EndDate   *utils.Date `json:"end_date,omitempty" swaggertype:"string" example:"07-2025"`
+	ServiceName string      `json:"service_name"`
+	Price       int         `json:"price"`
+	UserId      string      `json:"user_id"`
+	StartDate   *utils.Date `json:"start_date" swaggertype:"string" example:"07-2025"`
+	EndDate     *utils.Date `json:"end_date,omitempty" swaggertype:"string" example:"07-2025"`
 }
 
 // ListSubscriptionsRequest Модель данных для получения списка записей о подписках
@@ -121,7 +123,9 @@ func UpdateSubscription(req UpdateSubscriptionRequest, repo repository.Subscript
 		return nil, err
 	}
 
+	sub.ServiceName = req.ServiceName
 	sub.Price = req.Price
+	sub.UserId = req.UserId
 	sub.StartDate = req.StartDate
 	sub.EndDate = req.EndDate
 

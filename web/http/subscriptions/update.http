@@ -1,9 +1,11 @@
 ### Изменение записи о подписке
-POST http://localhost:8080/subscription/1
+POST http://localhost:8080/subscription/3
 Content-Type: application/json
 
 {
+  "service_name": "Yandex Plus",
   "price": 400,
+  "user_id": "60601fee-2bf1-4721-ae6f-7636e79a0cba",
   "start_date": "07-2025",
   "end-date": "12-2025"
 }

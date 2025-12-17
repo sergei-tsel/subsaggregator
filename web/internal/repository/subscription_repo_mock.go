@@ -101,7 +101,9 @@ func (repo SubscriptionRepoMock) Create(entity *model.Subscription) error {
 }
 
 func (repo SubscriptionRepoMock) Update(entity *model.Subscription) error {
+	repo.Subscriptions[entity.Id].ServiceName = entity.ServiceName
 	repo.Subscriptions[entity.Id].Price = entity.Price
+	repo.Subscriptions[entity.Id].UserId = entity.UserId
 	repo.Subscriptions[entity.Id].StartDate = entity.StartDate
 	repo.Subscriptions[entity.Id].EndDate = entity.EndDate
 

@@ -306,7 +306,9 @@ func TestUpdateSubscription(t *testing.T) {
 	subs := createTestSubscriptions(subscriptionRepo, 1)
 
 	req := UpdateSubscriptionRequest{
-		Price: 200,
+		ServiceName: "Тестовый сервис 2",
+		Price:       200,
+		UserId:      "Тестовый UUID 2",
 		StartDate: &utils.Date{NullTime: sql.NullTime{
 			Time:  time.Now().AddDate(0, -6, 0),
 			Valid: true,
@@ -337,9 +339,9 @@ func TestUpdateSubscription(t *testing.T) {
 				subsId: subs[0].Id,
 			},
 			want: &model.Subscription{
-				ServiceName: subs[0].ServiceName,
+				ServiceName: req.ServiceName,
 				Price:       req.Price,
-				UserId:      subs[0].UserId,
+				UserId:      req.UserId,
 				StartDate:   req.StartDate,
 				EndDate:     req.EndDate,
 			},
@@ -349,7 +351,9 @@ func TestUpdateSubscription(t *testing.T) {
 			name: "Несуществующая подписка",
 			args: args{
 				req: UpdateSubscriptionRequest{
-					Price: 0,
+					ServiceName: "Тестовый сервис",
+					Price:       0,
+					UserId:      "Тестовый UUID",
 					StartDate: &utils.Date{NullTime: sql.NullTime{
 						Time:  time.Now().AddDate(0, -6, 0),
 						Valid: true,
