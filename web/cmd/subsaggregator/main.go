@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	_ "subsaggregator/docs"
 	"subsaggregator/internal/db"
 	"subsaggregator/internal/router"
+	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/natefinch/lumberjack"
@@ -25,6 +29,21 @@ func main() {
 
 	r := router.NewRouter()
 
+	loggerInit()
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+
+	go func() {
+		server.ListenAndServe()
+	}()
+
+	gracefulShutdown(server)
+}
+
+func loggerInit() {
 	hook := &lumberjack.Logger{
 		Filename:   "./logs/app.log",
 		MaxSize:    500,
@@ -54,6 +73,16 @@ func main() {
 
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
+}
 
-	http.ListenAndServe(":8080", r)
+func gracefulShutdown(server *http.Server) {
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	<-stop
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	server.Shutdown(ctx)
 }
